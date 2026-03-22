@@ -102,8 +102,8 @@ cp lcd32.uf2 /Volumes/RPI-RP2/
 
 ```c
 // 数据引脚 D0-D7
-#define LCD_D0  14
-#define LCD_D1  15
+#define LCD_D0  15
+#define LCD_D1  14
 #define LCD_D2  2
 #define LCD_D3  3
 #define LCD_D4  4
