@@ -113,9 +113,9 @@ int main()
     lcd_init();
     printf("LCD initialized\n");
 
-    // 开启背光
-    lcd_backlight_on();
-    printf("Backlight on\n");
+    // 设置背光亮度为50%
+    lcd_backlight_set_brightness(50);
+    printf("Backlight set to 50%%\n");
 
     // 显示加载中
     lcd_fill_screen(RGB565(20, 30, 60));

@@ -4,6 +4,7 @@
 #include "hardware/dma.h"
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
+#include "hardware/pwm.h"
 
 // 初始化数据引脚
 static void lcd_init_data_pins(void) {
@@ -21,21 +22,18 @@ static void lcd_init_control_pins(void) {
     gpio_init(LCD_RD);
     gpio_init(LCD_CS);
     gpio_init(LCD_RST);
-    gpio_init(LCD_BL);
 
     gpio_set_dir(LCD_RS, GPIO_OUT);
     gpio_set_dir(LCD_WR, GPIO_OUT);
     gpio_set_dir(LCD_RD, GPIO_OUT);
     gpio_set_dir(LCD_CS, GPIO_OUT);
     gpio_set_dir(LCD_RST, GPIO_OUT);
-    gpio_set_dir(LCD_BL, GPIO_OUT);
 
     // 初始状态
     gpio_put(LCD_CS, 1);   // 片选无效
     gpio_put(LCD_WR, 1);   // 写信号无效
     gpio_put(LCD_RD, 1);   // 读信号无效
     gpio_put(LCD_RST, 1);  // 复位无效
-    gpio_put(LCD_BL, 0);   // 背光关闭
 }
 
 // 写8位数据到数据总线
@@ -90,6 +88,7 @@ static void lcd_hard_reset(void) {
 void lcd_init(void) {
     lcd_init_data_pins();
     lcd_init_control_pins();
+    lcd_backlight_init();  // 初始化背光PWM
 
     // 硬件复位
     lcd_hard_reset();
@@ -240,10 +239,44 @@ void lcd_draw_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t colo
 
 // 开启背光
 void lcd_backlight_on(void) {
-    gpio_put(LCD_BL, 1);
+    lcd_backlight_set_brightness(100);
 }
 
 // 关闭背光
 void lcd_backlight_off(void) {
-    gpio_put(LCD_BL, 0);
+    lcd_backlight_set_brightness(0);
+}
+
+// 初始化背光PWM
+void lcd_backlight_init(void) {
+    // 设置GPIO为PWM功能
+    gpio_set_function(LCD_BL, GPIO_FUNC_PWM);
+    
+    // 获取PWM切片号
+    uint slice_num = pwm_gpio_to_slice_num(LCD_BL);
+    
+    // 配置PWM
+    pwm_config config = pwm_get_default_config();
+    pwm_config_set_clkdiv(&config, 1.0f);  // 时钟分频
+    pwm_config_set_wrap(&config, 255);     // 8位分辨率 (0-255)
+    
+    // 初始化PWM
+    pwm_init(slice_num, &config, true);
+    
+    // 初始亮度为0
+    pwm_set_gpio_level(LCD_BL, 0);
+}
+
+// 设置背光亮度 (0-100)
+void lcd_backlight_set_brightness(uint8_t brightness) {
+    // 限制范围
+    if (brightness > 100) {
+        brightness = 100;
+    }
+    
+    // 将0-100映射到0-255
+    uint16_t level = (brightness * 255) / 100;
+    
+    // 设置PWM占空比
+    pwm_set_gpio_level(LCD_BL, level);
 }

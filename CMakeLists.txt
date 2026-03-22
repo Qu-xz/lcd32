@@ -59,6 +59,7 @@ target_link_libraries(lcd32
         hardware_dma
         hardware_pio
         hardware_clocks
+        hardware_pwm
         pico_cyw43_arch_lwip_threadsafe_background
         )
 

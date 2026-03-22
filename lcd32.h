@@ -91,5 +91,7 @@ void lcd_draw_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t colo
 void lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void lcd_backlight_on(void);
 void lcd_backlight_off(void);
+void lcd_backlight_init(void);
+void lcd_backlight_set_brightness(uint8_t brightness); // 0-100
 
 #endif // LCD32_H
